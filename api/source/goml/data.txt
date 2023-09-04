@@ -1,0 +1,40 @@
+[
+    {
+        "date": "09/04/23",
+        "company name": "Saigon Technology",
+        "website": "https://saigontechnology.com/",
+        "contact name": "xyz",
+        "phone number": "7363738334",
+        "contact person email": "xys@gmail.com",
+        "email": "xys@gmail.com",
+        "address line 2": "ncnsamx",
+        "address line 1": "wdqff",
+        "city": " mxnkasm",
+        "state": "ndkmkamd",
+        "pin code": "100232",
+        "country": "mskmlad",
+        "products": "mkdj",
+        "services": "ndsjnsa",
+        "notes": "ndxnkmaskdk",
+        "fax number": "1312323"
+    },
+    {
+        "date": "09/09/2023",
+        "company name": "Microsoft",
+        "website": "https://www.microsoft.com/investor/reports/ar22/",
+        "contact name": "Kisha",
+        "phone number": "1123459842",
+        "contact person email": "20i104@kce.ac.in",
+        "email": "20i104@kce.ac.in",
+        "address line 2": "Hydreabadh",
+        "address line 1": "Hyderabadh street",
+        "city": "Hyderabadh",
+        "state": "Telungana",
+        "pin code": "132432",
+        "country": "Inida",
+        "products": "software products",
+        "services": "software servies",
+        "notes": "Nill",
+        "fax number": "12123"
+    }
+]
