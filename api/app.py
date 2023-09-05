@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import uvicorn
 import sys
-sys.path.insert(0, 'LLM policy generator\\api\\')
+sys.path.insert(0, 'LLM Procurement\\api\\')
 from router import router 
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
@@ -18,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router.router,tags=["Policy generator"])
+app.include_router(router.router,tags=["Procurement"])
 
 
 def run_server():

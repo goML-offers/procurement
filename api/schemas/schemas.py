@@ -23,3 +23,10 @@ class FilePath(BaseModel):
 
 class Prompt(BaseModel):
     prompt:str
+
+
+class Send_Email(BaseModel):
+    file: list[str]
+    email: list[str]
+    subject: str
+    body: str
