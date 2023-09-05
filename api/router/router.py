@@ -10,8 +10,8 @@ from services.RFP_validation import rfp_validation,rfp_data_extraction
 from services.merge_data import merge_by_company_name
 from services.local_data import get_from_local,push_to_local
 from services.send_email import send_email_with_attachment
-from services.crawler import crawler, output , extract
-from services.bedrock_claude import aws_claude_summarisation, extract_list_from_text
+# from services.crawler import crawler, output , extract
+# from services.bedrock_claude import aws_claude_summarisation, extract_list_from_text
 from services.s3_data import push_to_s3,get_from_s3
 import os
 from fastapi.responses import JSONResponse
