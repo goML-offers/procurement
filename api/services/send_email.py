@@ -16,12 +16,13 @@ smtp_password = os.environ.get("smtp_password")
 
 
 def send_email_with_attachment(subject,body,recipients, attachment_paths):
+    print(recipients)
     if not isinstance(recipients, str):
         recipients = ', '.join(recipients)
 
     if isinstance(attachment_paths, str):
         attachment_paths =[attachment_paths]
-
+    print(recipients)
     try:
         msg = MIMEMultipart()
         msg["From"] = sender_email_id

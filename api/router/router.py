@@ -65,7 +65,7 @@ def send_registration_form(data: SendEmail):
 
         Sincerely,
         Your Company Name"""
-        send_email_with_attachment(subject,body,data.emails,"llm_procurement\\Vendor_selection\\Vendor_selection\\api\\forms\\registration form.pdf")
+        send_email_with_attachment(subject,body,data.emails,"api/forms/registration form.pdf")
         return "Email sent successfully"
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -91,7 +91,10 @@ def send_RFP_form(data: SendEmail):
 
         Sincerely,
         Your Company Name"""
-        send_email_with_attachment(subject,body,data.emails,"llm_procurement\\Vendor_selection\\Vendor_selection\\api\\forms\\RFP.pdf")
+        try: 
+            send_email_with_attachment(subject,body,data.emails,"api/forms/RFP.pdf")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
         return "Email sent successfully"
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -100,7 +103,7 @@ def send_RFP_form(data: SendEmail):
 @router.post('/goml/LLM marketplace/vendor_registration', status_code=201)
 def registration_form_validation_and_data_extraction(data: FileUpload):
     try:
-        os.makedirs("/Vendor_selection/api/source/registration_uploads", exist_ok=True)
+        os.makedirs("api/source/registration_uploads", exist_ok=True)
         
         validation_results = []
         print(data.files)
@@ -108,7 +111,7 @@ def registration_form_validation_and_data_extraction(data: FileUpload):
             # Save the uploaded file to the 'uploads' directory
             with open(file_path, "rb") as f:
                 file = UploadFile(file=f, filename=os.path.basename(file_path))
-                file_path_dest = os.path.join("/Vendor_selection/api/source/registration_uploads", file.filename)
+                file_path_dest = os.path.join("api/source/registration_uploads", file.filename)
                 with open(file_path_dest, "wb") as dest_f:
                     shutil.copyfileobj(file.file, dest_f)
             push_to_s3(file_path_dest,data.company_name)
@@ -135,7 +138,7 @@ def registration_form_validation_and_data_extraction(data: FileUpload):
 @router.post('/goml/LLM marketplace/RFP_registration', status_code=201)
 def RPF_form_validation_and_data_extraction(data: FileUpload):
     try:
-        os.makedirs("/Vendor_selection/api/source/RFP_uploads", exist_ok=True)
+        os.makedirs("api/source/RFP_uploads", exist_ok=True)
 
         validation_results = []
         path = []
@@ -145,7 +148,7 @@ def RPF_form_validation_and_data_extraction(data: FileUpload):
             
             with open(file_path, "rb") as f:
                 file = UploadFile(file=f, filename=os.path.basename(file_path))
-                file_path_dest = os.path.join("/Vendor_selection/api/source/RFP_uploads", file.filename)
+                file_path_dest = os.path.join("api/source/RFP_uploads", file.filename)
                 with open(file_path_dest, "wb") as dest_f:
                     shutil.copyfileobj(file.file, dest_f)
             
