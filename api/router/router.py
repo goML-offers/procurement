@@ -209,3 +209,16 @@ def matrix_generator_from_RFP(data: FilePath):
     matrix = output(extracted_data, llm_formatted_data)
     print("matrix ----------------------------",matrix)
     return matrix
+@router.post('/goml/LLM marketplace/uploadFile', status_code=201)
+def send_registration_form(file: UploadFile):
+    UPLOAD_DIR = "uploads"
+
+    if not os.path.exists(UPLOAD_DIR):
+        os.makedirs(UPLOAD_DIR)
+    # Generate a unique file name to avoid overwriting existing files
+    file_path = os.path.join(UPLOAD_DIR, file.filename)
+    
+    with open(file_path, "wb") as f:
+        f.write(file.file.read())
+    
+    return {"file_path": file_path}
