@@ -8,10 +8,10 @@ from schemas.schemas import FileUpload,EmailFile,SendEmail,FilePath,Prompt,Send_
 from services.registration_validation import registration_validation
 from services.RFP_validation import rfp_validation,rfp_data_extraction
 from services.merge_data import merge_by_company_name
-from services.local_data import get_from_local,push_to_local
+# from services.local_data import get_from_local,push_to_local
 from services.send_email import send_email_with_attachment
-# from services.crawler import crawler, output , extract
-# from services.bedrock_claude import aws_claude_summarisation, extract_list_from_text
+from services.crawler import crawler, output , extract
+from services.bedrock_claude import aws_claude_summarisation, extract_list_from_text
 from services.s3_data import push_to_s3,get_from_s3
 import os
 from fastapi.responses import JSONResponse
@@ -134,7 +134,7 @@ def registration_form_validation_and_data_extraction(data: FileUpload):
         #     return "None of the given form is valid"
         # obj = registration_validation(file_path,email)
         print(validation_results)
-        push_to_local(validation_results,data.company_name)
+        # push_to_local(validation_results,data.company_name)
         
         # os.remove(file_path)
         
@@ -209,3 +209,16 @@ def matrix_generator_from_RFP(data: FilePath):
     matrix = output(extracted_data, llm_formatted_data)
     print("matrix ----------------------------",matrix)
     return matrix
+@router.post('/goml/LLM marketplace/uploadFile', status_code=201)
+def send_registration_form(file: UploadFile):
+    UPLOAD_DIR = "uploads"
+
+    if not os.path.exists(UPLOAD_DIR):
+        os.makedirs(UPLOAD_DIR)
+    # Generate a unique file name to avoid overwriting existing files
+    file_path = os.path.join(UPLOAD_DIR, file.filename)
+    
+    with open(file_path, "wb") as f:
+        f.write(file.file.read())
+    
+    return {"file_path": file_path}
