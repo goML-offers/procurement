@@ -19,17 +19,17 @@ app.add_middleware(
 )
 
 app.include_router(router.router,tags=["Procurement"])
-#def run_server():
-#    uvicorn.run("main:app", host="http://127.0.0.1:8000/", port=8000, reload=True)
-#     uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=True)
 def run_server():
-    command = "nohup uvicorn app:app --host 0.0.0.0 --port 8001 --reload > /dev/null 2>&1 &"
+#    uvicorn.run("main:app", host="http://127.0.0.1:8000/", port=8000, reload=True)
+    uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=True)
+# def run_server():
+#     command = "nohup uvicorn app:app --host 0.0.0.0 --port 8001 --reload > /dev/null 2>&1 &"
 
-    try:
-        os.system(command)
-        print("FastAPI server is running in the background.")
-    except Exception as e:
-        print(f"Error starting FastAPI server: {str(e)}")
+#     try:
+#         os.system(command)
+#         print("FastAPI server is running in the background.")
+#     except Exception as e:
+#         print(f"Error starting FastAPI server: {str(e)}")
 
 
 

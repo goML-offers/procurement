@@ -17,6 +17,12 @@ import os
 from fastapi.responses import JSONResponse
 import shutil
 import json
+from dotenv import load_dotenv
+load_dotenv()
+
+reg_form=os.environ.get("reg_form")
+rfp_form = os.environ.get("rfp_form")
+# Email configuration
 
 router = APIRouter()
 
@@ -65,7 +71,8 @@ def send_registration_form(data: SendEmail):
 
         Sincerely,
         Your Company Name"""
-        send_email_with_attachment(subject,body,data.emails,"api/forms/registration form.pdf")
+        for email in data.emails:
+            send_email_with_attachment(subject,body,data.emails,reg_form)
         return "Email sent successfully"
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -92,7 +99,8 @@ def send_RFP_form(data: SendEmail):
         Sincerely,
         Your Company Name"""
         try: 
-            send_email_with_attachment(subject,body,data.emails,"api/forms/RFP.pdf")
+            for email in data.emails:
+                send_email_with_attachment(subject,body,data.email,rfp_form)
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
         return "Email sent successfully"
@@ -103,7 +111,7 @@ def send_RFP_form(data: SendEmail):
 @router.post('/goml/LLM marketplace/vendor_registration', status_code=201)
 def registration_form_validation_and_data_extraction(data: FileUpload):
     try:
-        os.makedirs("api/source/registration_uploads", exist_ok=True)
+        os.makedirs("registration_uploads", exist_ok=True)
         
         validation_results = []
         print(data.files)
@@ -111,7 +119,7 @@ def registration_form_validation_and_data_extraction(data: FileUpload):
             # Save the uploaded file to the 'uploads' directory
             with open(file_path, "rb") as f:
                 file = UploadFile(file=f, filename=os.path.basename(file_path))
-                file_path_dest = os.path.join("api/source/registration_uploads", file.filename)
+                file_path_dest = os.path.join("registration_uploads", file.filename)
                 with open(file_path_dest, "wb") as dest_f:
                     shutil.copyfileobj(file.file, dest_f)
             push_to_s3(file_path_dest,data.company_name)
