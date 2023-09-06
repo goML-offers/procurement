@@ -221,4 +221,7 @@ def send_registration_form(file: UploadFile):
     with open(file_path, "wb") as f:
         f.write(file.file.read())
     
+
+
     return {"file_path": file_path}
+
