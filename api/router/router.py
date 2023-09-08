@@ -228,25 +228,25 @@ def matrix_generator_from_RFP(data: FilePath):
         # return matrix
         my_dictionary=[]
         if len(matrix)!=0:
-            my_dictionary = matrix
-        # folder_path = txt_data
+            my_dictionary = matrix[0]
+        folder_path = txt_data
 
-        # try:
-        #     # Create the folder if it doesn't exist
-        #     os.makedirs(folder_path, exist_ok=True)
+        try:
+            # Create the folder if it doesn't exist
+            os.makedirs(folder_path, exist_ok=True)
 
-        #     # Define the file path
-        #     file_path = os.path.join(folder_path, txt_name+'.txt')
+            # Define the file path
+            file_path = os.path.join(folder_path, txt_name+'.txt')
 
-        #     # Open the file in write mode
-        #     with open(file_path, 'w') as file:
-        #         # Write the dictionary as a string representation to the file
-        #         file.write(str(my_dictionary))
+            # Open the file in write mode
+            with open(file_path, 'w') as file:
+                # Write the dictionary as a string representation to the file
+                file.write(str(my_dictionary))
 
-        #     print(f"Dictionary stored in {file_path}")
-        # except Exception as e:
-        #     print(f"Error: {str(e)}")
-        # # print(data.file_name)
+            print(f"Dictionary stored in {file_path}")
+        except Exception as e:
+            print(f"Error: {str(e)}")
+        # print(data.file_name)
         return matrix
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -271,36 +271,36 @@ def send_registration_form(file: UploadFile):
 import os
 import ast
 
-# @router.get('/goml/LLM marketplace/Matrix_generator_data', status_code=201)
-# def extract_and_remove_dicts_from_files():
-#     folder_path = txt_data
-#     try:
-#         # Get a list of all .txt files in the folder
-#         txt_files = [f for f in os.listdir(folder_path) if f.endswith('.txt')]
+@router.get('/goml/LLM marketplace/Matrix_generator_data', status_code=201)
+def extract_and_remove_dicts_from_files():
+    folder_path = txt_data
+    try:
+        # Get a list of all .txt files in the folder
+        txt_files = [f for f in os.listdir(folder_path) if f.endswith('.txt')]
 
-#         # Initialize an empty list to store the extracted dictionaries
-#         extracted_dicts = []
+        # Initialize an empty list to store the extracted dictionaries
+        extracted_dicts = []
 
-#         # Loop through each .txt file
-#         for txt_file in txt_files:
-#             file_path = os.path.join(folder_path, txt_file)
+        # Loop through each .txt file
+        for txt_file in txt_files:
+            file_path = os.path.join(folder_path, txt_file)
 
-#             # Read the file contents
-#             with open(file_path, 'r') as file:
-#                 file_contents = file.read()
+            # Read the file contents
+            with open(file_path, 'r') as file:
+                file_contents = file.read()
 
-#             try:
-#                 # Convert the file contents to a dictionary using ast.literal_eval
-#                 extracted_dict = ast.literal_eval(file_contents)
+            try:
+                # Convert the file contents to a dictionary using ast.literal_eval
+                extracted_dict = ast.literal_eval(file_contents)
 
-#                 # Append the extracted dictionary to the list
-#                 extracted_dicts.append(extracted_dict)
+                # Append the extracted dictionary to the list
+                extracted_dicts.append(extracted_dict)
 
-#                 print(f"Extracted dictionary from {txt_file}")
-#             except (SyntaxError, ValueError):
-#                 print(f"Skipped {txt_file} - Not a valid dictionary")
+                print(f"Extracted dictionary from {txt_file}")
+            except (SyntaxError, ValueError):
+                print(f"Skipped {txt_file} - Not a valid dictionary")
 
-#         return extracted_dicts
-#     except Exception as e:
-#         print(f"Error: {str(e)}")
-#         return []
+        return extracted_dicts
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return []
