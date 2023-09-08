@@ -12,25 +12,14 @@ import random
 
 revenue = random.randint(63000000, 990000000)
 load_dotenv(find_dotenv())
-# AWS_ACCESS_KEY_ID=os.environ.get("AWS_ACCESS_KEY_ID")
-# AWS_SECRET_ACCESS_KEY_ID=os.environ.get("AWS_SECRET_ACCESS_KEY_ID")
-# region_name = os.environ.get("region_name")
-
-# bedrock = boto3.client(aws_access_key_id=AWS_ACCESS_KEY_ID, 
-#                       aws_secret_access_key=AWS_SECRET_ACCESS_KEY_ID,
-#                       service_name='bedrock',region_name=region_name,
-#                       endpoint_url='https://bedrock.us-west-2.amazonaws.com')
+AWS_ACCESS_KEY_ID=os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY_ID=os.environ.get("AWS_SECRET_ACCESS_KEY_ID")
 region_name = os.environ.get("region_name")
-
-os.environ['AWS_ACCESS_KEY_ID'] = "AKIA3OBOBB2KA5Y7LLIT"
-
-os.environ['AWS_SECRET_ACCESS_KEY'] = "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"
-
  
 
-bedrock = boto3.client(aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+bedrock = boto3.client(aws_access_key_id=AWS_ACCESS_KEY_ID,
 
-                      aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+                      aws_secret_access_key=AWS_SECRET_ACCESS_KEY_ID,
 
                       service_name='bedrock',region_name=region_name,
 

@@ -6,9 +6,9 @@ import re
 
 load_dotenv(find_dotenv())
 
-# AWS_ACCESS_KEY_ID=os.environ.get("AWS_ACCESS_KEY_ID")
-# AWS_SECRET_ACCESS_KEY_ID=os.environ.get("AWS_SECRET_ACCESS_KEY_ID")
-# region_name = os.environ.get("region_name")
+AWS_ACCESS_KEY_ID=os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY_ID=os.environ.get("AWS_SECRET_ACCESS_KEY_ID")
+region_name = os.environ.get("region_name")
 
 # bedrock = boto3.client(aws_access_key_id=AWS_ACCESS_KEY_ID, 
 #                       aws_secret_access_key=AWS_SECRET_ACCESS_KEY_ID,
@@ -16,15 +16,12 @@ load_dotenv(find_dotenv())
 #                       endpoint_url='https://bedrock.us-west-2.amazonaws.com')
 region_name = os.environ.get("region_name")
 
-os.environ['AWS_ACCESS_KEY_ID'] = "AKIA3OBOBB2KA5Y7LLIT"
-
-os.environ['AWS_SECRET_ACCESS_KEY'] = "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"
 
  
 
-bedrock = boto3.client(aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+bedrock = boto3.client(aws_access_key_id=AWS_ACCESS_KEY_ID,
 
-                      aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+                      aws_secret_access_key=AWS_SECRET_ACCESS_KEY_ID,
 
                       service_name='bedrock',region_name=region_name,
 

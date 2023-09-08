@@ -6,23 +6,11 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-# AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID_S3")
-# AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY_S3")
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID_S3")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY_S3")
 
-
-
-# session = Session(aws_access_key_id=AWS_ACCESS_KEY_ID,
-# aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
-# s3 = session.resource('s3')
-# s3_client = s3.Bucket('gomloffers')
-
-os.environ['AWS_ACCESS_KEY_ID'] = "AKIA3OBOBB2KAPCAI5EE"
-os.environ['AWS_SECRET_ACCESS_KEY'] = "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"
-
-
-
-session = Session(aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
-aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'])
+session = Session(aws_access_key_id=AWS_ACCESS_KEY_ID,
+aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 s3 = session.resource('s3')
 s3_client = s3.Bucket('gomloffers')
 
