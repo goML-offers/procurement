@@ -8,7 +8,7 @@ load_dotenv()
 
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID_S3")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY_ID_S3")
-
+print(AWS_ACCESS_KEY_ID)
 session = Session(aws_access_key_id=AWS_ACCESS_KEY_ID,
 aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 s3 = session.resource('s3')
@@ -20,12 +20,13 @@ def push_to_s3(file_path,company_name):
     print(file_path)
     folder_name = company_name
     file_name = file_path.split('/')[-1]
-    print(file_name)
+    print(file_name,"ss")
     # s3_client.put_object(Bucket="gomloffers", Key="procurement/")
     # s3_client.put_object(Bucket="gomloffers", Key=f'procurement/{folder_name}/')
     # Upload the text file to the S3 folder
     s3_key = "procurement/"+folder_name+"/"+file_name
     s3_client.upload_file(Key=s3_key, Filename=file_path)
+    # s3_client.put_object(Bucket="gomloffers", Key=s3_key, Body=file_path)
     # s3_client.upload_file(Key="procurement"+f'{folder_name}/{file_name}', Filename = file_path)
     os.remove(file_path)
    

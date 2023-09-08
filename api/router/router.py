@@ -26,6 +26,7 @@ rfp_form = os.environ.get("rfp_form")
 txt_data=os.environ.get("txt_data")
 # Email configuration
 
+
 router = APIRouter()
 
 @router.post('/goml/LLM marketplace/vendor_suggestion', status_code=201)
@@ -82,7 +83,7 @@ def send_registration_form(data: SendEmail):
 
 @router.post('/goml/LLM marketplace/send_RFP_form', status_code=201)
 def send_RFP_form(data: SendEmail):
-    print("satish")
+ 
     try:
         
         subject = "Request for Proposal (RFP) Submission"
