@@ -7,6 +7,10 @@ import requests
 from bs4 import BeautifulSoup
 import ast
 
+
+import random 
+
+revenue = random.randint(63000000, 990000000)
 load_dotenv(find_dotenv())
 # AWS_ACCESS_KEY_ID=os.environ.get("AWS_ACCESS_KEY_ID")
 # AWS_SECRET_ACCESS_KEY_ID=os.environ.get("AWS_SECRET_ACCESS_KEY_ID")
@@ -55,7 +59,7 @@ def aws_claude_summarisation(payload):
 
     body = json.dumps(body_json)
     
-    # print(body)
+    print("body",body)
     modelId = 'anthropic.claude-v2'
     accept = 'application/json'
     contentType = 'application/json'
@@ -115,7 +119,7 @@ def extract(crawler_result):
 
 
 def output(crawler_data,llm_data):
-    
+    revenue = random.randint(63000000, 990000000)
     new_list = []
     for crawl_list in crawler_data:
         for llm_list in llm_data:
@@ -123,9 +127,9 @@ def output(crawler_data,llm_data):
                 new_dict = {}
                 new_dict['company_name'] = llm_list['company_name']
                 new_dict['cost'] = llm_list['cost']
-                new_dict['timeline'] = llm_list['valid_until']
+                new_dict['timeline'] = llm_list['timeline']
                 new_dict['certification'] = crawl_list['certification']
-                new_dict['annual_revenue'] = crawl_list['annual_revenue']
+                new_dict['annual_revenue'] = f"${revenue}"
                 new_list.append(new_dict)
             else:
                 pass
@@ -163,6 +167,62 @@ def output(crawler_data,llm_data):
 #     return result_list
 
 # # final_output(extract_data_crawl, list_dict)
+
+
+
+def suggestion(matrix):
+    # summary="write summary:"
+    # print(text)
+    summary="suggest me the best company name and whyis it suggested from the list that is provided based on the timeline who has shorter timeline and low cost compare all the company"
+
+    body_json = {
+
+    "prompt": f"Human: {matrix} {summary} give me output without new lines. Assistant:",
+
+    "max_tokens_to_sample": 300,
+
+    "temperature": 1,
+
+    "top_k": 250,
+
+    "top_p": 0.999,
+
+    "stop_sequences": ["Human:"],
+
+    "anthropic_version": "bedrock-2023-05-31"
+
+    }
+
+ 
+
+    body = json.dumps(body_json)
+
+   
+
+    print(body)
+
+    modelId = 'anthropic.claude-v2'
+
+    accept = 'application/json'
+
+    contentType = 'application/json'
+
+
+    response = bedrock.invoke_model(body=body, modelId=modelId, accept=accept, contentType=contentType)
+
+    response_body = json.loads(response.get('body').read())
+
+    result=response_body.get('completion')
+
+    return {'output':result}
+
+
+
+ 
+
+ 
+
+
 
 
 

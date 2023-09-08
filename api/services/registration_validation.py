@@ -19,6 +19,7 @@ keys_to_check = [
  'country', 
  'products', 
  'services', 
+ 'time_line'
  ] 
 
 def extract_empty_field_names(pdf_path):

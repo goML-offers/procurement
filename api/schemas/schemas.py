@@ -22,7 +22,7 @@ class FilePath(BaseModel):
     file_path: list
 
 class Prompt(BaseModel):
-    prompt:str
+    prompt:list
 
 
 class Send_Email(BaseModel):

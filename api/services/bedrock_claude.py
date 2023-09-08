@@ -35,12 +35,12 @@ def aws_claude_summarisation(payload):
     # summary="write summary:"
     
     # print(text)
-    summary="provide me only the company name, cost ,  website and valid until date from the text that is provided. if company name, cost , website and valid until date is not present return me with 'N/A' dont provide me anything else"
+    summary="provide me only the company name, cost ,  website and time line from the text that is provided. if company name, cost , website and time line is not present return me with 'N/A' dont provide me anything else"
     body_json = {
     "prompt": f"Human: {summary} {text} give me output in the form of a list of JSON. "
               f"The structure of the output should look like this only, for example: "
-              f"[{{'company_name': 'ABC Corporation', 'cost': '324', 'website': 'https://www.abccorp.com', 'valid_until': '23/09/2023'}}, "
-              f"{{'company_name': 'XYZ Builders Inc.', 'cost': '34', 'website': 'https://www.abccorp.com', 'valid_until': '21/07/2023'}}] "
+              f"[{{'company_name': 'ABC Corporation', 'cost': '324', 'website': 'https://www.abccorp.com', 'timeline': '3months'}}, "
+              f"{{'company_name': 'XYZ Builders Inc.', 'cost': '34', 'website': 'https://www.abccorp.com', 'timeline': '2months'}}] "
               f"this is just an example for two companies. Give me output in the exact structure for all the companies mentioned in the text provided. "
               f"One dictionary for one company and add it to the list. Don't give me anything apart from a list of dictionaries Assistant:",
     "max_tokens_to_sample": 300,

@@ -16,7 +16,7 @@ smtp_password = os.environ.get("smtp_password")
 
 
 def send_email_with_attachment(subject,body,recipients, attachment_paths):
-    print(recipients)
+    print("attachment_paths",attachment_paths)
     if not isinstance(recipients, str):
         recipients = ', '.join(recipients)
 
