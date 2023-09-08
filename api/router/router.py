@@ -28,9 +28,9 @@ txt_data=os.environ.get("txt_data")
 
 router = APIRouter()
 
-@router.get('/goml/LLM marketplace/vendor_suggestion', status_code=201)
-def matrix_generator_from_RFP():
-    vendor_suggestion = suggestion(extract_and_remove_dicts_from_files())
+@router.post('/goml/LLM marketplace/vendor_suggestion', status_code=201)
+def matrix_generator_from_RFP(data:Prompt):
+    vendor_suggestion = suggestion(data.prompt)
     return vendor_suggestion["output"]
 
 @router.post("/goml/LLM marketplace/send_custom_form")
