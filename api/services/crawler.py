@@ -89,7 +89,7 @@ def crawler(list_dict):
 
 
 def extract(crawler_result):
-    # print("crawler_result--------------------------",crawler_result)
+    # print("crawler_result---------------------------",crawler_result)
     parsed_data = []
     pattern = r'\{[^}]*\}'
 
