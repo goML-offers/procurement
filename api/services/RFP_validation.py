@@ -104,4 +104,5 @@ def rfp_data_extraction(file_path):
     # 'deployment and maintenance', 
     # 'scalability and performance', 
     # 'additional notes', 
+    # waita
     # 'budget requirements'
