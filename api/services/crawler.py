@@ -27,40 +27,74 @@ bedrock = boto3.client(aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
 
                       endpoint_url='https://bedrock.us-west-2.amazonaws.com')
 
+import anthropic_bedrock
+from anthropic_bedrock import AnthropicBedrock
+from datetime import datetime, timedelta
+
+
+
+client = AnthropicBedrock(
+    # Authenticate by either providing the keys below or use the default AWS credential providers, such as
+    # using ~/.aws/credentials or the "AWS_SECRET_ACCESS_KEY" and "AWS_ACCESS_KEY_ID" environment variables.
+    aws_access_key=os.environ.get("AWS_ACCESS_KEY_ID"),
+    aws_secret_key=os.environ.get("AWS_SECRET_ACCESS_KEY_ID"),
+    aws_region="us-west-2"
+)
+
+
 def aws_claude_summarisation(payload):
     text=payload['text']
     # summary="write summary:"
     
     # print(text)
     summary="find me only the company name and the certification name or any award mentioned and the annual revenue from the text that is provided. if name of the company or certification name or the annual revenue is not present return me with 'N/A' dont provide me anything else"
-    body_json = {
-    "prompt": f"Human: {text} {summary} give me output in the form of a JSON like structure. "
-              f"The structure of the output should look like this only, for example: "
-              f"{{'company_name': 'ABC Corporation', 'certification': 'ISO certified', 'annual_revenue': '$23243434'}} and one more example"
+    # body_json = {
+    # "prompt": f"Human: {text} {summary} give me output in the form of a JSON like structure. "
+    #           f"The structure of the output should look like this only, for example: "
+    #           f"{{'company_name': 'ABC Corporation', 'certification': 'ISO certified', 'annual_revenue': '$23243434'}} and one more example"
+    #           f"{{'company_name': 'XYZ Builders Inc.', 'certification': 'ISO certified name', 'annual_revenue': '$2300434'}}"
+    #           f"this is just an example for one company. Give me output in the exact structure and format nothing else should be given extra for the company mentioned in the text provided. "
+    #           f"One dictionary for the company only, so the list should have only those number of dictionaries that are mentioned in the give text. Don't give me anything apart from dictionary if anything is not present or mentionted give 'N/A' for that key only Assistant:",
+    # "max_tokens_to_sample": 300,
+    # "temperature": 1,
+    # "top_k": 250,
+    # "top_p": 0.999,
+    # "stop_sequences": ["Human:"],
+    # "anthropic_version": "bedrock-2023-05-31"
+    # }
+
+    # body = json.dumps(body_json)
+    
+    # print("body",body)
+    # modelId = 'anthropic.claude-v2'
+    # accept = 'application/json'
+    # contentType = 'application/json'
+
+    # response = bedrock.invoke_model(body=body, modelId=modelId, accept=accept, contentType=contentType)
+    # response_body = json.loads(response.get('body').read())
+
+    # result=response_body.get('completion')
+    prompt= f"""Human: {text} {summary} give me output in the form of a JSON like structure. "
+              "The structure of the output should look like this only, for example: "
+              "{{'company_name': 'ABC Corporation', 'certification': 'ISO certified', 'annual_revenue': '$23243434'}} and one more example"
               f"{{'company_name': 'XYZ Builders Inc.', 'certification': 'ISO certified name', 'annual_revenue': '$2300434'}}"
-              f"this is just an example for one company. Give me output in the exact structure and format nothing else should be given extra for the company mentioned in the text provided. "
-              f"One dictionary for the company only, so the list should have only those number of dictionaries that are mentioned in the give text. Don't give me anything apart from dictionary if anything is not present or mentionted give 'N/A' for that key only Assistant:",
-    "max_tokens_to_sample": 300,
-    "temperature": 1,
-    "top_k": 250,
-    "top_p": 0.999,
-    "stop_sequences": ["Human:"],
-    "anthropic_version": "bedrock-2023-05-31"
-    }
-
-    body = json.dumps(body_json)
+              "this is just an example for one company. Give me output in the exact structure and format nothing else should be given extra for the company mentioned in the text provided. " """
     
-    print("body",body)
-    modelId = 'anthropic.claude-v2'
-    accept = 'application/json'
-    contentType = 'application/json'
+    print("\n\n2")
+    completion = client.completions.create(
+    model="anthropic.claude-v2:1",
+    temperature=1,
+    top_k=250,
+    top_p= 0.999,
+    max_tokens_to_sample=256,
+    prompt=f"{anthropic_bedrock.HUMAN_PROMPT} {prompt} {anthropic_bedrock.AI_PROMPT}",
+)
 
-    response = bedrock.invoke_model(body=body, modelId=modelId, accept=accept, contentType=contentType)
-    response_body = json.loads(response.get('body').read())
-
-    result=response_body.get('completion')
+    print(completion.completion)
     
-    return {'output':result}
+    return {'output':completion.completion}
+
+    # return {'output':completion.completion}
 
 # result = aws_titan_summarisation(dict_pagecontent)
 

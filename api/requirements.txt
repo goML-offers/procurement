@@ -12,3 +12,4 @@ boto3
 beautifulsoup4
 pydantic
 pdfrw
+anthropic_bedrock
