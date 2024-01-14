@@ -29,7 +29,6 @@ def send_email_with_attachment(subject,body,recipients, attachment_paths):
 
     if isinstance(attachment_paths, str):
         attachment_paths =[attachment_paths]
-    print(attachment_paths)
     print(recipients)
     try:
          # Replace 'your-aws-region' with your AWS region
