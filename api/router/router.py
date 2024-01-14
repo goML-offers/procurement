@@ -1,58 +1,41 @@
-import sys
-import time
-from fastapi import FastAPI, File, Form, UploadFile
-sys.path.insert(0, 'LLM Procurement\\api\\')
-from fastapi import APIRouter, Depends, Request
-from sqlalchemy.orm import Session
-from fastapi import APIRouter, HTTPException, Response
-from schemas.schemas import FileUpload,EmailFile,SendEmail,FilePath,Prompt,Send_Email
-from services.registration_validation import registration_validation
-from services.RFP_validation import rfp_validation,rfp_data_extraction
-from services.merge_data import merge_by_company_name
-# from services.local_data import get_from_local,push_to_local
-from services.send_email import send_email_with_attachment
-from services.crawler import crawler, output , extract, suggestion
-from services.bedrock_claude import aws_claude_summarisation, extract_list_from_text
-from services.s3_data import push_to_s3,get_from_s3
-import os
-from fastapi.responses import JSONResponse
-import shutil
-import json
-from dotenv import load_dotenv
-load_dotenv()
 
-reg_form=os.environ.get("reg_form")
-rfp_form = os.environ.get("rfp_form")
-txt_data=os.environ.get("txt_data")
-# Email configuration
+from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException, Response,FastAPI, File, UploadFile, Depends, Request
+from fastapi.responses import JSONResponse
+from services.send_email import send_email_with_attachment
+from pydantic import BaseModel, Field
+import os 
+import shutil
+from dotenv import load_dotenv
+import random
+import json
+load_dotenv()
 
 router = APIRouter()
 
-@router.post('/goml/LLM marketplace/vendor_suggestion', status_code=201)
-def matrix_generator_from_RFP(data:Prompt):
-    vendor_suggestion = suggestion(data.prompt)
-    return vendor_suggestion["output"]
+from lyzr import QABot
+from lyzr import ChatBot
 
-@router.post("/goml/LLM marketplace/send_custom_form")
-async def upload_file(data: Send_Email):
-    try:
-        file_paths=[]
-        for file_path in data.file:
-                # Save the uploaded file to the 'uploads' directory
-                print(file_path)
-                
-                with open(file_path, "rb") as f:
-                    file = UploadFile(file=f, filename=os.path.basename(file_path))
-                    
-                    with open(file.filename, "wb") as dest_f:
-                        shutil.copyfileobj(file.file, dest_f)
-                    file_paths.append(file.filename)
-        
-        send_email_with_attachment(data.subject,data.body,data.email,file_paths)
-        return "Mail sent with form successfully"
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    
+# Set your OpenAI API key
+os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY')
+
+class SendEmail(BaseModel):
+    emails: list[str] = Field(..., example=["user1@example.com", "user2@example.com"])
+
+current_directory = os.path.dirname(os.path.abspath(__file__))
+
+reg_form = os.path.join(current_directory, 'registration form.pdf')
+upload_folder_reg =  os.path.join(current_directory, 'exports/reg/')
+upload_folder_rfp =  os.path.join(current_directory, 'exports/rfp/')
+reg_vector_store = os.path.join(current_directory, 'reg_vector_store/.lancedb')
+rfp_vector_store = os.path.join(current_directory, 'rfp_vector_store/.lancedb')
+
+Reg_QAbot =None
+RFP_QAbot =None
+
+reg_file_path = []
+rfp_file_path = []
+
 @router.post('/goml/LLM marketplace/send_registration_form', status_code=201)
 def send_registration_form(data: SendEmail):
     try:
@@ -79,234 +62,269 @@ def send_registration_form(data: SendEmail):
         return "Email sent successfully"
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-@router.post('/goml/LLM marketplace/send_RFP_form', status_code=201)
-def send_RFP_form(data: SendEmail):
-    print("satish")
+    
+########################################################################################################################################################################################################################################
+    
+@router.post("/goml/LLM marketplace/reg_upload")
+async def upload_files(files: list[UploadFile] = File(...)):
+    global Reg_QAbot
+    global reg_file_path
     try:
+        # Create the upload folder if it doesn't exist
         
-        subject = "Request for Proposal (RFP) Submission"
-        body = """
-        Dear Recipient,
+        if not os.path.exists(reg_vector_store):
+            # shutil.rmtree(os.path.join(current_directory, 'reg_vectore_store'))
+            os.makedirs(reg_vector_store)
+        if os.path.exists(upload_folder_reg):
+            shutil.rmtree(upload_folder_reg)
+        reg_file_path.clear()
+        if not os.path.exists(upload_folder_reg):
+            os.makedirs(upload_folder_reg)
+        print(upload_folder_reg)
+        for file in files:
+            file_path = os.path.join(upload_folder_reg, file.filename)
+            reg_file_path.append(file_path)
+            # Save the file to the specified folder
+            with open(file_path, "wb") as f:
+                shutil.copyfileobj(file.file, f)
 
-        I hope this email finds you well. We are currently seeking proposals for a project and would like to invite your organization to submit a proposal.
 
-        To facilitate the submission process, we kindly request that you complete the attached RFP form. If your organization has specific RFP submission guidelines or requirements, please provide those documents along with your proposal.
+        random_integer = random.randint(1, 10000000000)
+        table_name = "reg"+str(random_integer)
+        Reg_QAbot = ChatBot.pdf_chat(input_files=reg_file_path,
+        vector_store_params={
+            "vector_store_type": "LanceDBVectorStore",
+            "uri":reg_vector_store,
+            "table_name": table_name,
+        }
+    )
+  
+        
+        return JSONResponse(content={"message": "Files uploaded successfully"}, status_code=200)
 
-        [Attach RFP Form - If Applicable]
-
-        Please submit your completed proposal and any additional documentation to [Submission Email Address] by [Submission Deadline]. If you have any questions or require further information, please do not hesitate to contact us.
-
-        We look forward to receiving your proposal and potentially collaborating with your organization.
-
-        Thank you for considering our request.
-
-        Sincerely,
-        Your Company Name"""
-        try: 
-            for email in data.emails:
-                send_email_with_attachment(subject,body,email,rfp_form)
-        except Exception as e:
-            print(e)
-            raise HTTPException(status_code=400, detail=str(e))
-        return "Email sent successfully"
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    
-    
-@router.post('/goml/LLM marketplace/vendor_registration', status_code=201)
-def registration_form_validation_and_data_extraction(data: FileUpload):
-    try:
-        os.makedirs("/app/registration_uploads", exist_ok=True)
-        
-        validation_results = []
-        print(data.files)
-        for email, file_path in zip(data.emails, data.files):
-            # Save the uploaded file to the 'uploads' directory
-            with open(file_path, "rb") as f:
-                file = UploadFile(file=f, filename=os.path.basename(file_path))
-                file_path_dest = os.path.join("/app/registration_uploads", file.filename)
-                with open(file_path_dest, "wb") as dest_f:
-                    shutil.copyfileobj(file.file, dest_f)
-            push_to_s3(file_path_dest,data.company_name)
-            # Call your registration validation function
-            validation_result = registration_validation(file_path, email)
-            if validation_result is None:
-                continue
-            validation_results.append(validation_result)
+        raise HTTPException(status_code=500, detail=str(e))
 
-        # os.remove(file_path_dest)
-        # if not validation_result:
-        #     return "None of the given form is valid"
-        # obj = registration_validation(file_path,email)
-        print(validation_results)
-        # push_to_local(validation_results,data.company_name)
-        
-        # os.remove(file_path)
-        
-        return "Successfully analyzed and sent email"
+@router.post("/goml/LLM marketplace/Reg_QAbot")
+async def upload_files(querys:str):
+    global Reg_QAbot
+    try:
+        response = Reg_QAbot.chat(querys)
+
+        # Print the QABot's response
+        print(response.response)
+        result = response.response
+        return {"response":result}
+
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
     
-
-@router.post('/goml/LLM marketplace/RFP_registration', status_code=201)
-def RPF_form_validation_and_data_extraction(data: FileUpload):
+@router.get("/goml/LLM marketplace/Reg_Matrix")
+async def Reg_matrix_generation():
+    global reg_file_path
     try:
-        os.makedirs("/app/RFP_uploads", exist_ok=True)
+        result_list=[]
+        prompt = """you are given with the data of registration forms, extract the below listed data as matrix and return that as dict, nothing other than that
+details:
+                                   
+Registered Name 
 
-        validation_results = []
-        path = []
-        for email, file_path in zip(data.emails, data.files):
-            # Save the uploaded file to the 'uploads' directory
-            print(file_path)
+Registered Address 
+
+Contact email id 
+
+Contact Name 
+
+Contact Phone No 
+
+Vendor website 
+        
+output formate:
+{}
+        """
+        for i in reg_file_path:
+            random_integer = random.randint(1, 1000000000)
+            table_name = "reg_matrix"+str(random_integer)
+            Reg_table_QAbot = ChatBot.pdf_chat(input_files=reg_file_path,
+            vector_store_params={
+                "vector_store_type": "LanceDBVectorStore",
+                "uri":reg_vector_store,
+                "table_name": table_name,
+            }
+        )
+
+            response = Reg_table_QAbot.chat(prompt)
+
+            # Print the QABot's response
+            print(response.response)
+            result = eval(response.response)
+            json_string = json.dumps(result)
+
+            python_dict = json.loads(json_string)
+            print(type(response),type(json_string),type(python_dict))
+            result_list.append(python_dict)
+
+        # Print the QABot's response
+        print(response.response)
+        result = response.response
+        return {"response":result_list}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+#######################################################################################################################################################################################
+
+@router.post("/goml/LLM marketplace/rfp_upload")
+async def upload_files(files: list[UploadFile] = File(...)):
+    global RFP_QAbot
+    global rfp_file_path
+    try:
+        # Create the upload folder if it doesn't exist
+        rfp_file_path.clear()
+        if not os.path.exists(rfp_vector_store):
+            print("k")
+            # os.remove(os.path.join(current_directory, 'reg_vectore_store'))
+            os.makedirs(rfp_vector_store)
+        if os.path.exists(upload_folder_rfp):
+            shutil.rmtree(upload_folder_rfp)
+
+        if not os.path.exists(upload_folder_rfp):
+            os.makedirs(upload_folder_rfp)
+        print(upload_folder_rfp)
+        for file in files:
+            file_path = os.path.join(upload_folder_rfp, file.filename)
+            rfp_file_path.append(file_path)
+            # Save the file to the specified folder
+            with open(file_path, "wb") as f:
+                shutil.copyfileobj(file.file, f)
+
+        random_integer = random.randint(1, 10000000000)
+        table_name = "Rfp"+str(random_integer)
+        
+        RFP_QAbot = QABot.pdf_qa(input_files=rfp_file_path,
+                                 llm_params={"model": "gpt-3.5-turbo"},
+        vector_store_params={
+            "vector_store_type": "LanceDBVectorStore",
+            "uri":rfp_vector_store,
+            "table_name": table_name,
+        }
+    )
+        
+        print(RFP_QAbot)
+        return JSONResponse(content={"message": "Files uploaded successfully"}, status_code=200)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/goml/LLM marketplace/RFP_QAbot")
+async def upload_files(querys:str):
+    global RFP_QAbot
+    print(RFP_QAbot)
+    try:
+        response = RFP_QAbot.query(querys)
+
+        # Print the QABot's response
+        print(response.response)
+        result = response.response
+        return {"response":result}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/goml/LLM marketplace/RFP_Matrix")
+async def RFP_matrix_generation():
+    global RFP_QAbot
+    try:
+        prompt = """you are given with the data of multiple RFP forms from same or different vendors, extract the below listed data as matrix for all the pdfs,if no exact data found use relavent data and return that as dict, nothing other than that
+details:
+                                   
+1. Vendor Name 
+
+2. Project Title 
+
+3. Delivery Timelines 
+
+4. Commercial quote 
+
+5. References 
+
+6. Payment Timeline 
+
+7. Additionally, from the vendor website/online 
+
+   7.1 Year of incorporation 
+
+   7.2 Total revenue for last year 
+
+   7.3 Certifications – ISO/GDPR compliant 
+        
+output format:
+{}
+        """
+        response = RFP_QAbot.query(prompt)
+
+        # Print the QABot's response
+        print(response.response)
+        result = response.response
+        return {"response":result}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/goml/LLM marketplace/RFP_report")
+async def RFP_matrix_generation():
+    global rfp_file_path
+    try:
+        result_list=[]
+        prompt = """you are given with the data of multiple RFP forms from same or different vendors, extract the below listed data as matrix for all the pdfs,if no exact data found use relavent data and return that as dict, nothing other than that
+                                   
+The engine should be able to extract the following details from the document & tabulate for comparison across the 3 contracts.
+details:
+
+1)	Vendor Name
+2)	Scope of work – Summary in 1 line
+3)	Architecture description – Highlight the best practices in 2-3 lines
+4)	Project timeline
+5)	Commercials, to be shown as a split in the following format
+    a.	Implementation costs
+    b.	Infrastructure costs
+        i.	With Mongo
+        ii.	With DocumentDB
+6)	Payment milestones
+7)	Payment release date
+8)	From the internet, it should populate
+    a.	Vendor’s date of inception, when did they start operations
+    b.	2023 revenue
+    c.	Total no of employees
+    d.	Any awards/recognitions
+
+        
+output format:
+dict : {}
+        """
+        for i in rfp_file_path:
+            random_integer = random.randint(1, 100000000000000)
+            table_name = "Rfp_report"+str(random_integer)
             
-            with open(file_path, "rb") as f:
-                file = UploadFile(file=f, filename=os.path.basename(file_path))
-                file_path_dest = os.path.join("/app/RFP_uploads", file.filename)
-                with open(file_path_dest, "wb") as dest_f:
-                    shutil.copyfileobj(file.file, dest_f) 
-            print("fp",file_path)
-            #path.append(file_path_dest)
-            path.append(push_to_s3(file_path_dest,data.company_name))
-            # Call your registration validation function
-            validation_result = rfp_validation(file_path, email)
-            # os.remove(file_path_dest)
-            if validation_result is None:
-                continue
-            
-            # os.remove(file_path)
+            RFP_reportQAbot = QABot.pdf_qa(input_files=[i],
+                                    llm_params={"model": "gpt-3.5-turbo"},
+            vector_store_params={
+                "vector_store_type": "LanceDBVectorStore",
+                "uri":rfp_vector_store,
+                "table_name": table_name,
+            }
+        )
+            response = RFP_reportQAbot.query(prompt)
 
-        # if not validation_results:
-        #     return "None of the given form is valid"
-        # rfp_data = get_from_local(data.company_name)
-        # print(type(rfp_data),type(rfp_data[0]))
-        
-        # merged_data =  merge_by_company_name(rfp_data,validation_results)
-        # obj = registration_validation(file_path,email)
-        # print(merged_data)
-        # os.remove(file_path)
+            # Print the QABot's response
+            print(response.response)
+            result = eval(response.response)
+            json_string = json.dumps(result)
 
+            python_dict = json.loads(json_string)
+            print(type(response),type(json_string),type(python_dict))
+            result_list.append(python_dict)
+        return {"response":result_list}
 
-        # return "Successfully analyzed and sent email"
-        # return validation_results
-        print(path)
-        return path
-    
     except Exception as e:
-        print(e)
-        raise HTTPException(status_code=400, detail=str(e))
-
-@router.post('/goml/LLM marketplace/Matrix_generator', status_code=201)
-def matrix_generator_from_RFP(data: FilePath):
-    try:
-        x=((data.file_path[0]).split("\\"))
-        txt_name = x[-1].split('.')[0]
-        print(data.file_path,"file_path",x)
-        # txt_name  = "akaash"
-        validation_results = []
-        for files in data.file_path:
-            
-            files = get_from_s3(files)
-            print(files)
-            validation_results.append(rfp_data_extraction(files))
-        
-        print(validation_results)
-        data = {'text': f"Provide me only the total cost and time for all the compnay names in the given list seperatedly {validation_results}"}
-        llm_data = aws_claude_summarisation(data)
-        print(llm_data['output'])
-        print("---------------------------------------formatting data------------------------------------------")
-        llm_formatted_data = extract_list_from_text(llm_data['output'])
-        print(llm_formatted_data)
-        print("---------------------------------------crawler data------------------------------------------")
-        crawler_formatted_data = crawler(llm_formatted_data)
-        print(crawler_formatted_data)
-        extracted_data  = extract(crawler_formatted_data)
-        print(extracted_data)
-        matrix = output(extracted_data, llm_formatted_data)
-        print("matrix ----------------------------",matrix)
-        # return matrix
-        my_dictionary=[]
-        if len(matrix)!=0:
-            my_dictionary = matrix
-        # folder_path = txt_data
-
-        # try:
-        #     # Create the folder if it doesn't exist
-        #     os.makedirs(folder_path, exist_ok=True)
-
-        #     # Define the file path
-        #     file_path = os.path.join(folder_path, txt_name+'.txt')
-
-        #     # Open the file in write mode
-        #     with open(file_path, 'w') as file:
-        #         # Write the dictionary as a string representation to the file
-        #         file.write(str(my_dictionary))
-
-        #     print(f"Dictionary stored in {file_path}")
-        # except Exception as e:
-        #     print(f"Error: {str(e)}")
-        # # print(data.file_name)
-        return matrix
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        return e
-
-@router.post('/goml/LLM marketplace/uploadFile', status_code=201)
-def send_registration_form(file: UploadFile):
-    UPLOAD_DIR = "/app/uploads"
-
-    if not os.path.exists(UPLOAD_DIR):
-        os.makedirs(UPLOAD_DIR)
-    # Generate a unique file name to avoid overwriting existing files
-    file_path = os.path.join(UPLOAD_DIR, file.filename)
-    
-    with open(file_path, "wb") as f:
-        f.write(file.file.read())
-        f.close()
-    
-
-    return {"file_path": file_path}
-
-import os
-import ast
-
-# @router.get('/goml/LLM marketplace/Matrix_generator_data', status_code=201)
-# def extract_and_remove_dicts_from_files():
-#     folder_path = txt_data
-#     try:
-#         # Get a list of all .txt files in the folder
-#         txt_files = [f for f in os.listdir(folder_path) if f.endswith('.txt')]
-
-#         # Initialize an empty list to store the extracted dictionaries
-#         extracted_dicts = []
-
-#         # Loop through each .txt file
-#         for txt_file in txt_files:
-#             file_path = os.path.join(folder_path, txt_file)
-
-#             # Read the file contents
-#             with open(file_path, 'r') as file:
-#                 file_contents = file.read()
-
-#             try:
-#                 # Convert the file contents to a dictionary using ast.literal_eval
-#                 extracted_dict = ast.literal_eval(file_contents)
-
-#                 # Append the extracted dictionary to the list
-#                 extracted_dicts.append(extracted_dict)
-
-#                 print(f"Extracted dictionary from {txt_file}")
-#             except (SyntaxError, ValueError):
-#                 print(f"Skipped {txt_file} - Not a valid dictionary")
-
-#         return extracted_dicts
-#     except Exception as e:
-#         print(f"Error: {str(e)}")
-#         return []
-
-from fastapi import FastAPI, HTTPException, Form
-import boto3
- 
-
- 
-
+        raise HTTPException(status_code=500, detail=str(e))
