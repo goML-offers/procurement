@@ -3,6 +3,7 @@ boto3
 python-dotenv
 python-multipart
 uvicorn
+openai
 fastapi~=0.97.0
 sqlalchemy~=2.0.16
 PyPDF2
