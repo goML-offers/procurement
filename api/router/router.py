@@ -122,9 +122,10 @@ async def upload_files(querys:str):
 @router.get("/goml/LLM marketplace/Reg_Matrix")
 async def Reg_matrix_generation():
     global reg_file_path
+    global Reg_QAbot
     try:
         result_list=[]
-        prompt = """you are given with the data of registration forms, extract the below listed data as matrix and return that as dict, nothing other than that
+        prompt = """you are given with the data of registration forms, fetch the below listed data as matrix and return that as dict, nothing other than that
 details:
                                    
 Registered Name 
@@ -140,34 +141,21 @@ Contact Phone No
 Vendor website 
         
 output formate:
-{}
+list of dict : [{},{}]
         """
-        for i in reg_file_path:
-            random_integer = random.randint(1, 1000000000)
-            table_name = "reg_matrix"+str(random_integer)
-            Reg_table_QAbot = ChatBot.pdf_chat(input_files=reg_file_path,
-            vector_store_params={
-                "vector_store_type": "LanceDBVectorStore",
-                "uri":reg_vector_store,
-                "table_name": table_name,
-            }
-        )
+        
 
-            response = Reg_table_QAbot.chat(prompt)
-
-            # Print the QABot's response
-            print(response.response)
-            result = eval(response.response)
-            json_string = json.dumps(result)
-
-            python_dict = json.loads(json_string)
-            print(type(response),type(json_string),type(python_dict))
-            result_list.append(python_dict)
+        response = Reg_QAbot.chat(prompt)
 
         # Print the QABot's response
-        print(response.response)
-        result = response.response
-        return {"response":result_list}
+        result = eval(response.response)
+        json_string = json.dumps(result)
+
+        python_dict = json.loads(json_string)
+
+        # Print the QABot's response
+        
+        return {"response": python_dict}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -250,23 +238,25 @@ details:
 
 6. Payment Timeline 
 
-7. Additionally, from the vendor website/online 
 
-   7.1 Year of incorporation 
+   7. Year of incorporation 
 
-   7.2 Total revenue for last year 
+   8. Total revenue for last year 
 
-   7.3 Certifications – ISO/GDPR compliant 
+   9 Certifications – ISO/GDPR compliant 
         
 output format:
-{}
+list of dict : [{},{}]
         """
         response = RFP_QAbot.query(prompt)
 
-        # Print the QABot's response
-        print(response.response)
-        result = response.response
-        return {"response":result}
+        result = eval(response.response)
+        json_string = json.dumps(result)
+
+        python_dict = json.loads(json_string)
+        
+
+        return JSONResponse(content={"response":python_dict}, status_code=200)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
