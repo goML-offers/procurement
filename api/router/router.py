@@ -28,7 +28,7 @@ reg_form = os.path.join(current_directory, 'registration form.pdf')
 upload_folder_reg =  os.path.join(current_directory, 'exports/reg/')
 upload_folder_rfp =  os.path.join(current_directory, 'exports/rfp/')
 reg_vector_store = os.path.join(current_directory, 'reg_vector_store/.lancedb')
-rfp_vector_store = os.path.join(current_directory, 'rfp_vector_store/.lancedb')
+rfp_vector_store = os.path.join(current_directory, 'rfp_vectorn_store/.lancedb')
 
 Reg_QAbot =None
 RFP_QAbot =None
