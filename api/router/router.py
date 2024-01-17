@@ -24,7 +24,7 @@ class SendEmail(BaseModel):
 
 current_directory = os.path.dirname(os.path.abspath(__file__))
 
-reg_form = os.path.join(current_directory, 'registration form.pdf')
+reg_form = os.path.join(current_directory, 'KCG VENDOR REGISTRATION FORM.doc')
 upload_folder_reg =  os.path.join(current_directory, 'exports/reg/')
 upload_folder_rfp =  os.path.join(current_directory, 'exports/rfp/')
 reg_vector_store = os.path.join(current_directory, 'reg_vector_store/.lancedb')
@@ -265,7 +265,7 @@ list of dict : [{},{}]
 async def RFP_matrix_generation():
     global rfp_file_path
     try:
-        rfp_file_path=['api\\router\\exports\\rfp\\PAM Application implementation - LTIM 1.pdf']
+       
         result_list=[]
         prompt = """you are given with the data of multiple RFP forms from same or different vendors,go through the document well enough to get all the payment and costs  in section 10 . extract the below listed data as matrix for all the pdfs,if no exact data found use relavent data and return that as dict, nothing other than that
 The engine should be able to extract the following details from the document & tabulate for comparison across the 3 contracts.
