@@ -265,28 +265,23 @@ list of dict : [{},{}]
 async def RFP_matrix_generation():
     global rfp_file_path
     try:
+        rfp_file_path=['api\\router\\exports\\rfp\\PAM Application implementation - LTIM 1.pdf']
         result_list=[]
-        prompt = """you are given with the data of multiple RFP forms from same or different vendors, extract the below listed data as matrix for all the pdfs,if no exact data found use relavent data and return that as dict, nothing other than that
-                                   
+        prompt = """you are given with the data of multiple RFP forms from same or different vendors,go through the document well enough to get all the payment and costs  in section 10 . extract the below listed data as matrix for all the pdfs,if no exact data found use relavent data and return that as dict, nothing other than that
 The engine should be able to extract the following details from the document & tabulate for comparison across the 3 contracts.
 details:
 
 1)	Vendor Name
 2)	Scope of work – Summary in 1 line
 3)	Architecture description – Highlight the best practices in 2-3 lines
-4)	Project timeline
-5)	Commercials, to be shown as a split in the following format
+4)	Commercials, to be shown as a split in the following format
     a.	Implementation costs
     b.	Infrastructure costs
         i.	With Mongo
         ii.	With DocumentDB
-6)	Payment milestones
-7)	Payment release date
-8)	From the internet, it should populate
-    a.	Vendor’s date of inception, when did they start operations
-    b.	2023 revenue
-    c.	Total no of employees
-    d.	Any awards/recognitions
+5)	Payment milestones
+6)	Payment release date
+
 
         
 output format:
@@ -297,24 +292,76 @@ dict : {}
             table_name = "Rfp_report"+str(random_integer)
             
             RFP_reportQAbot = QABot.pdf_qa(input_files=[i],
-                                    llm_params={"model": "gpt-3.5-turbo"},
+                                    llm_params={"model": "gpt-4"},
             vector_store_params={
                 "vector_store_type": "LanceDBVectorStore",
                 "uri":rfp_vector_store,
                 "table_name": table_name,
             }
-        )
+        )   
+            
+            
+            
+            
+            
             response = RFP_reportQAbot.query(prompt)
-
-            # Print the QABot's response
-            print(response.response)
+            
+            # print("bot response",response.response)
+            print(type(eval(response.response)))
             result = eval(response.response)
-            json_string = json.dumps(result)
-
-            python_dict = json.loads(json_string)
-            print(type(response),type(json_string),type(python_dict))
-            result_list.append(python_dict)
+            # json_string = json.dumps(response.response)
+            print(type(result),result)
+            # python_dict = json.loads(json_string)
+            # print(type(response),type(json_string),type(python_dict))
+            # print(python_dict)
+            # vendor = python_dict.split(',')
+            # vendor = vendor[0].split(":")
+            vendor = result["Vendor Name"]
+            print(vendor)
+           
+            prompt1=f"""
+           provide me {vendor}'s 
+            a.	Vendor’s date of inception, when did they start operations
+            b.	2023 revenue
+            c.	Total no of employees (approx)
+            d.	Any awards/recognitions
+            in a dict format
+             """
+            vendor_info = generate_coaching_topic(prompt1)
+            print("gpt response",vendor_info)
+            # Print the QABot's response
+            
+            result["Additional info"] = eval(vendor_info)
+            print(type(result))
+            result_list.append(result)
         return {"response":result_list}
 
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=str(e))
+
+def generate_coaching_topic(prompt):
+    try:
+        # Define the system message
+        system_msg = 'You are a helpful assistant'
+
+        # Define the user message
+        # Create a dataset using GPT
+        from openai import OpenAI
+        client = OpenAI()
+        response = client.chat.completions.create(
+            model='gpt-3.5-turbo',
+            messages=[
+                {'role': 'user', 'content': prompt}
+            ],
+            temperature=0,
+        )
+        messages = [choice.message.content for choice in response.choices]
+
+        # Print or use the messages as needed
+
+        # print("res",response,response["choices"][0]["message"])
+        return messages[0]
+    except Exception as e:
+        print(e)
+        return f"Error occurred: {str(e)}"
